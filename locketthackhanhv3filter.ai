@@ -1,0 +1,44 @@
+# =========================================================================
+# Shadowrocket Configuration Profile - Đã gỡ VPS (Chỉ giữ tính năng cục bộ)
+# =========================================================================
+
+[General]
+bypass-system = true
+skip-proxy = 192.168.0.0/16, 10.0.0.0/8, 172.16.0.0/12, 127.0.0.1, localhost, *.local
+tun-excluded-routes = 10.0.0.0/8, 100.64.0.0/10, 127.0.0.0/8, 169.254.0.0/16, 172.16.0.0/12, 192.0.0.0/24, 192.0.2.0/24, 192.88.99.0/24, 192.168.0.0/16, 198.18.0.0/15, 198.51.100.0/24, 203.0.113.0/24, 224.0.0.0/4, 255.255.255.255/32
+dns-server = system, 1.1.1.1, 8.8.8.8
+ipv6 = false
+skip-cert-verify = true
+
+[Rule]
+DOMAIN-SUFFIX,revenuecat.com,DIRECT
+DOMAIN-SUFFIX,googleapis.com,DIRECT
+DOMAIN-SUFFIX,cloudfunctions.net,DIRECT
+DOMAIN-SUFFIX,locketcamera.com,DIRECT
+FINAL,DIRECT
+
+[Header Rewrite]
+# Chống cache 304 Not Modified để nhận Gold & Remote Config đầy đủ
+^https?:\/\/(api|rc-backup)\.revenuecat\.com\/v1\/(subscribers|receipts).* header-del X-RevenueCat-ETag
+^https?:\/\/(api|rc-backup)\.revenuecat\.com\/v1\/(subscribers|receipts).* header-del If-None-Match
+^https?:\/\/(api|rc-backup)\.revenuecat\.com\/v1\/(subscribers|receipts).* header-del If-Modified-Since
+
+^https?:\/\/.*firebaseremoteconfig.*\.googleapis\.com\/.* header-del If-None-Match
+^https?:\/\/.*firebaseremoteconfig.*\.googleapis\.com\/.* header-del If-Modified-Since
+^https?:\/\/.*firebaseremoteconfig.*\.googleapis\.com\/.* header-del ETag
+
+[Script]
+# 1. Chống cache 304 Not Modified trên RevenueCat & Firebase Remote Config (Request)
+locketmphong_strip_rc = type=http-request,pattern=^https?:\/\/(api|rc-backup)\.revenuecat\.com\/v1\/(subscribers|receipts).*,requires-body=0,max-size=1048576,script-path=https://raw.githubusercontent.com/khanhnguyenthach8-tech/Feature/refs/heads/khanhnguyenthach8-tech-v3-tinhnang/Untitled-5.js
+locketmphong_strip_fb = type=http-request,pattern=^https?:\/\/.*firebaseremoteconfig.*\.googleapis\.com\/.*,requires-body=0,max-size=1048576,script-path=https://raw.githubusercontent.com/khanhnguyenthach8-tech/Feature/refs/heads/khanhnguyenthach8-tech-v3-tinhnang/Untitled-5.js
+
+# 2. Mở khóa RevenueCat Gold VIP (Response)
+locketmphong_RC = type=http-response,pattern=^https?:\/\/(api|rc-backup)\.revenuecat\.com\/v1\/(subscribers|receipts).*,requires-body=1,max-size=2097152,script-path=https://raw.githubusercontent.com/khanhnguyenthach8-tech/Feature/refs/heads/khanhnguyenthach8-tech-v3-tinhnang/Untitled-5.js
+
+# 3. Firebase Remote Config: 45s + Thư Viện + Moments Views + Khung Viền + Caption + Photobooth (Response)
+locketmphong_Firebase = type=http-response,pattern=^https?:\/\/.*firebaseremoteconfig.*\.googleapis\.com\/.*,requires-body=1,max-size=2097152,script-path=https://raw.githubusercontent.com/khanhnguyenthach8-tech/Feature/refs/heads/khanhnguyenthach8-tech-v3-tinhnang/Untitled-5.js
+
+[MITM]
+enable = true
+skip-server-cert-verify = true
+hostname = api.revenuecat.com, *.revenuecat.com, rc-backup.revenuecat.com, firebaseremoteconfig.googleapis.com, *.firebaseremoteconfig.googleapis.com, firebaseremoteconfigrealtime.googleapis.com, *.firebaseremoteconfigrealtime.googleapis.com
